@@ -1,23 +1,111 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Link } from 'react-router'
 import gsap from 'gsap'
 import MandalaGlow from '../components/MandalaGlow'
+import { trpc } from '@/providers/trpc'
 
-// VAPI credentials
-const VAPI_PUBLIC_KEY = '45643144-cecf-41cd-a353-93a4daaa5ca1'
-const VAPI_ASSISTANT_ID = 'c2245b47-bd44-4d0a-a9e6-799817bbd837'
+// Static import of VAPI SDK - loaded when page loads, not on click
+import Vapi from '@vapi-ai/web'
 
-// Share link for fallback
-const VAPI_SHARE_URL = 'https://vapi.ai?demo=true&shareKey=ab2f5269-9daf-4c49-8d6f-456851df9600&assistantId=c2245b47-bd44-4d0a-a9e6-799817bbd837'
+const VAPI_PUBLIC_KEY = 'ab2f5269-9daf-4c49-8d6f-456851df9600'
 
 export default function Demo() {
   const sectionRef = useRef<HTMLDivElement>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const vapiRef = useRef<any>(null)
+  const vapiInitialized = useRef(false)
 
   const [callState, setCallState] = useState<'idle' | 'connecting' | 'active' | 'ended' | 'error'>('idle')
   const [statusMsg, setStatusMsg] = useState('')
   const [isSpeaking, setIsSpeaking] = useState(false)
+
+  // Initialize VAPI instance once on mount
+  useEffect(() => {
+    if (vapiInitialized.current) return
+    vapiInitialized.current = true
+
+    try {
+      const vapi = new Vapi(VAPI_PUBLIC_KEY)
+      vapiRef.current = vapi
+
+      vapi.on('call-start', () => {
+        console.log('VAPI: call-start')
+        setCallState('active')
+        setStatusMsg('')
+      })
+
+      vapi.on('call-end', () => {
+        console.log('VAPI: call-end')
+        setCallState('ended')
+        setIsSpeaking(false)
+      })
+
+      vapi.on('speech-start', () => {
+        console.log('VAPI: speech-start')
+        setIsSpeaking(true)
+      })
+
+      vapi.on('speech-end', () => {
+        console.log('VAPI: speech-end')
+        setIsSpeaking(false)
+      })
+
+      vapi.on('error', (err: unknown) => {
+        console.error('VAPI error:', err)
+      })
+
+      console.log('VAPI instance pre-initialized')
+    } catch (e) {
+      console.error('Failed to pre-initialize VAPI:', e)
+    }
+  }, [])
+
+  // tRPC mutation to create webcall via backend
+  const startCallMutation = trpc.demo.startCall.useMutation({
+    onSuccess: async (data) => {
+      if (data.success && data.webCallUrl && data.callId) {
+        console.log('Webcall created, joining immediately...')
+        setStatusMsg('Joining voice room...')
+        await connectToCall(data.webCallUrl, data.callId)
+      } else {
+        console.error('Backend error:', data.error)
+        setStatusMsg(data.error || 'Failed to create call')
+        setCallState('error')
+      }
+    },
+    onError: (err) => {
+      console.error('tRPC error:', err)
+      setStatusMsg('Server error: ' + err.message)
+      setCallState('error')
+    },
+  })
+
+  // Connect to call using VAPI SDK reconnect
+  const connectToCall = useCallback(async (webCallUrl: string, callId: string) => {
+    try {
+      if (!vapiRef.current) {
+        throw new Error('VAPI not initialized')
+      }
+
+      // Stop any previous call first
+      try { vapiRef.current.stop() } catch { /* ok */ }
+      await new Promise(r => setTimeout(r, 500))
+
+      console.log('Calling reconnect with:', { webCallUrl, callId })
+
+      // Use reconnect to join the pre-created webcall
+      await vapiRef.current.reconnect({
+        webCallUrl,
+        id: callId,
+      })
+
+    } catch (err) {
+      console.error('Connect error:', err)
+      const msg = err instanceof Error ? err.message : String(err)
+      setStatusMsg('Connection error: ' + msg)
+      setCallState('error')
+    }
+  }, [])
 
   // GSAP entrance
   useEffect(() => {
@@ -28,74 +116,15 @@ export default function Demo() {
     return () => ctx.revert()
   }, [])
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (vapiRef.current) {
-        try { vapiRef.current.stop() } catch { /* ok */ }
-      }
-    }
-  }, [])
-
-  const handleStartCall = async () => {
+  const handleStartCall = () => {
     setCallState('connecting')
-    setStatusMsg('Initializing voice connection...')
-
-    try {
-      // Import VAPI SDK
-      const mod = await import('@vapi-ai/web')
-      console.log('VAPI module:', mod)
-
-      // Get the constructor
-      const VapiCtor = mod.default
-      if (!VapiCtor) {
-        throw new Error('VAPI SDK not loaded. Check console for details.')
-      }
-
-      setStatusMsg('Connecting to AI agent...')
-
-      // Create VAPI instance
-      const vapi = new VapiCtor(VAPI_PUBLIC_KEY)
-      vapiRef.current = vapi
-
-      // Set up event listeners
-      vapi.on('call-start', () => {
-        console.log('VAPI: call started')
-        setCallState('active')
-      })
-
-      vapi.on('call-end', () => {
-        console.log('VAPI: call ended')
-        setCallState('ended')
-        setIsSpeaking(false)
-      })
-
-      vapi.on('speech-start', () => setIsSpeaking(true))
-      vapi.on('speech-end', () => setIsSpeaking(false))
-
-      vapi.on('error', (err: unknown) => {
-        console.error('VAPI error:', err)
-        const msg = err instanceof Error ? err.message : typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err)
-        setStatusMsg('Error: ' + msg)
-        setCallState('error')
-      })
-
-      // Start the call
-      console.log('Starting call with assistant:', VAPI_ASSISTANT_ID)
-      await vapi.start(VAPI_ASSISTANT_ID)
-
-    } catch (err) {
-      console.error('Start call error:', err)
-      const msg = err instanceof Error ? err.message : typeof err === 'object' && err !== null ? JSON.stringify(err) : String(err)
-      setStatusMsg('Connection failed: ' + msg)
-      setCallState('error')
-    }
+    setStatusMsg('Creating voice session...')
+    startCallMutation.mutate()
   }
 
   const handleStopCall = () => {
     if (vapiRef.current) {
       try { vapiRef.current.stop() } catch { /* ok */ }
-      vapiRef.current = null
     }
     setCallState('ended')
     setIsSpeaking(false)
@@ -105,10 +134,6 @@ export default function Demo() {
     setCallState('idle')
     setStatusMsg('')
     setIsSpeaking(false)
-  }
-
-  const openNewTab = () => {
-    window.open(VAPI_SHARE_URL, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -157,6 +182,7 @@ export default function Demo() {
                   </div>
                 </div>
               </div>
+              <span className="hidden sm:block text-[10px] text-[#555555] uppercase tracking-wider">Powered by AI Receptionist</span>
             </div>
 
             {/* ---- IDLE ---- */}
@@ -173,12 +199,13 @@ export default function Demo() {
                 </p>
                 <button
                   onClick={handleStartCall}
-                  className="inline-flex items-center gap-2 px-10 py-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white font-bold text-lg hover:scale-105 active:scale-95 transition-all duration-200 neon-glow"
+                  disabled={startCallMutation.isPending}
+                  className="inline-flex items-center gap-2 px-10 py-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white font-bold text-lg hover:scale-105 active:scale-95 transition-all duration-200 neon-glow disabled:opacity-50"
                 >
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
                   </svg>
-                  Start Live Demo
+                  {startCallMutation.isPending ? 'Creating Session...' : 'Start Live Demo'}
                 </button>
                 <p className="text-[#555555] text-xs mt-4 text-center">Allow microphone access when prompted</p>
               </div>
@@ -197,18 +224,17 @@ export default function Demo() {
                   </div>
                   <div className="absolute inset-0 rounded-full border-2 border-[#3b82f6]/40 animate-ping" style={{ animationDuration: '1.5s' }} />
                 </div>
-                <h3 className="text-white text-lg font-bold mb-2">{statusMsg || 'Connecting...'}</h3>
+                <h3 className="text-white text-base font-bold mb-2">{statusMsg || 'Connecting...'}</h3>
                 <div className="w-40 h-1.5 bg-white/10 rounded-full overflow-hidden mt-2">
                   <div className="h-full bg-gradient-to-r from-[#3b82f6] to-[#a855f7] animate-pulse rounded-full" style={{ width: '70%' }} />
                 </div>
-                <button onClick={handleStopCall} className="text-[#555555] text-xs mt-6 hover:text-white underline transition-colors">Cancel</button>
+                <button onClick={() => { setCallState('idle'); setStatusMsg(''); }} className="text-[#555555] text-xs mt-6 hover:text-white underline transition-colors">Cancel</button>
               </div>
             )}
 
             {/* ---- ACTIVE ---- */}
             {callState === 'active' && (
               <div className="flex flex-col items-center justify-center py-16 px-6 bg-[#0d0d0d]" style={{ minHeight: '380px' }}>
-                {/* Animated rings */}
                 <div className="relative mb-8">
                   <div className="w-28 h-28 rounded-full bg-gradient-to-br from-[#3b82f6]/20 to-[#a855f7]/20 flex items-center justify-center">
                     <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 ${isSpeaking ? 'bg-gradient-to-br from-[#3b82f6] to-[#a855f7] shadow-lg shadow-[#3b82f6]/50 scale-110' : 'bg-gradient-to-br from-[#3b82f6]/60 to-[#a855f7]/60'}`}>
@@ -224,30 +250,14 @@ export default function Demo() {
                     </>
                   )}
                 </div>
-                <h3 className="text-white text-xl font-bold mb-1">
-                  {isSpeaking ? 'AI Agent is Speaking' : 'Listening...'}
-                </h3>
+                <h3 className="text-white text-xl font-bold mb-1">{isSpeaking ? 'AI Agent is Speaking' : 'Listening...'}</h3>
                 <p className="text-[#888888] text-sm mb-8">{isSpeaking ? 'Your AI agent is responding' : 'Say something...'}</p>
-
-                {/* Animated bars */}
                 <div className="flex items-center gap-1 h-8 mb-8">
                   {[...Array(7)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-1 rounded-full bg-gradient-to-t from-[#3b82f6] to-[#a855f7]"
-                      style={{
-                        height: isSpeaking ? `${6 + Math.sin(Date.now() / 150 + i * 0.8) * 18 + 4}px` : '4px',
-                        opacity: isSpeaking ? 1 : 0.3,
-                        transition: 'all 0.15s ease',
-                      }}
-                    />
+                    <div key={i} className="w-1 rounded-full bg-gradient-to-t from-[#3b82f6] to-[#a855f7]" style={{ height: isSpeaking ? `${6 + Math.sin(Date.now() / 150 + i * 0.8) * 18 + 4}px` : '4px', opacity: isSpeaking ? 1 : 0.3, transition: 'all 0.15s ease' }} />
                   ))}
                 </div>
-
-                <button
-                  onClick={handleStopCall}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 font-semibold text-sm hover:bg-red-500/30 transition-all"
-                >
+                <button onClick={handleStopCall} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 font-semibold text-sm hover:bg-red-500/30 transition-all">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 3.75h4.5a.75.75 0 01.75.75v4.5m-19.5 0V4.5a.75.75 0 01.75-.75h4.5m0 16.5h-4.5a.75.75 0 01-.75-.75v-4.5m19.5 0v4.5a.75.75 0 01-.75.75h-4.5" />
                   </svg>
@@ -265,9 +275,7 @@ export default function Demo() {
                   </svg>
                 </div>
                 <h3 className="text-white text-xl font-bold mb-2 text-center">Call Ended</h3>
-                <p className="text-[#888888] text-sm text-center max-w-md mb-8">
-                  Thanks for trying the demo! This same AI agent can handle real calls for your business 24/7.
-                </p>
+                <p className="text-[#888888] text-sm text-center max-w-md mb-8">Thanks for trying the demo!</p>
                 <div className="flex gap-3">
                   <button onClick={handleRestart} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white font-bold text-sm hover:scale-105 transition-all neon-glow">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -275,9 +283,7 @@ export default function Demo() {
                     </svg>
                     Call Again
                   </button>
-                  <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white text-sm font-medium hover:bg-white/5 transition-all">
-                    Get Started
-                  </Link>
+                  <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white text-sm font-medium hover:bg-white/5 transition-all">Get Started</Link>
                 </div>
               </div>
             )}
@@ -290,22 +296,10 @@ export default function Demo() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9.75.75a9.75 9.75 0 11-19.5 0 9.75 9.75 0 0119.5 0zm-9.75 3.75h.008v.008H12v-.008z" />
                   </svg>
                 </div>
-                <h3 className="text-white text-lg font-bold mb-3 text-center">Connection Issue</h3>
-                <p className="text-[#888888] text-sm text-center max-w-md mb-2">
-                  The embedded call could not start. This usually means your assistant needs web call permissions in the VAPI dashboard.
-                </p>
-                <p className="text-red-400/70 text-xs text-center max-w-md mb-6 font-mono">{statusMsg}</p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button onClick={openNewTab} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white font-bold text-sm hover:scale-105 transition-all neon-glow">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                    </svg>
-                    Open in New Tab
-                  </button>
-                  <button onClick={handleRestart} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-white/20 text-[#888888] text-sm hover:bg-white/5 hover:text-white transition-all">
-                    Try Again
-                  </button>
-                </div>
+                <h3 className="text-white text-lg font-bold mb-2 text-center">Connection Issue</h3>
+                <p className="text-[#888888] text-sm text-center max-w-sm mb-2">{statusMsg}</p>
+                <p className="text-[#555555] text-xs text-center max-w-sm mb-6">Check your microphone permissions and try again.</p>
+                <button onClick={handleRestart} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white font-bold text-sm hover:scale-105 transition-all neon-glow">Try Again</button>
               </div>
             )}
 
@@ -315,20 +309,12 @@ export default function Demo() {
                 <span className="flex items-center gap-1">
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                  </svg>
-                  Secure
+                  </svg>Secure
                 </span>
                 <span className="flex items-center gap-1">
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-                  </svg>
-                  Natural Voice
-                </span>
-                <span className="flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  24/7 Available
+                  </svg>Natural Voice
                 </span>
               </div>
               <span className="text-[10px] text-[#3b82f6] font-semibold">AI Receptionist Technology</span>
