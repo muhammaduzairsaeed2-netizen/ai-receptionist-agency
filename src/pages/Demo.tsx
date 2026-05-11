@@ -2,29 +2,43 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { Link } from 'react-router'
 import gsap from 'gsap'
 import MandalaGlow from '../components/MandalaGlow'
-import { trpc } from '@/providers/trpc'
 
-// Static import of VAPI SDK - loaded when page loads, not on click
-import Vapi from '@vapi-ai/web'
-
+// VAPI credentials - PUBLIC KEY (safe for frontend, CORS enabled)
 const VAPI_PUBLIC_KEY = 'ab2f5269-9daf-4c49-8d6f-456851df9600'
+const VAPI_ASSISTANT_ID = 'c2245b47-bd44-4d0a-a9e6-799817bbd837'
 
 export default function Demo() {
   const sectionRef = useRef<HTMLDivElement>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const vapiRef = useRef<any>(null)
-  const vapiInitialized = useRef(false)
 
   const [callState, setCallState] = useState<'idle' | 'connecting' | 'active' | 'ended' | 'error'>('idle')
   const [statusMsg, setStatusMsg] = useState('')
   const [isSpeaking, setIsSpeaking] = useState(false)
 
-  // Initialize VAPI instance once on mount
+  // GSAP entrance
   useEffect(() => {
-    if (vapiInitialized.current) return
-    vapiInitialized.current = true
+    window.scrollTo(0, 0)
+    const ctx = gsap.context(() => {
+      gsap.from('.demo-animate', { opacity: 0, y: 30, duration: 0.8, stagger: 0.1, ease: 'power3.out', delay: 0.2 })
+    }, sectionRef)
+    return () => ctx.revert()
+  }, [])
 
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (vapiRef.current) {
+        try { vapiRef.current.stop() } catch { /* ok */ }
+      }
+    }
+  }, [])
+
+  // Connect to VAPI using webcall URL
+  const connectToCall = useCallback(async (webCallUrl: string, callId: string) => {
     try {
+      // Import VAPI SDK
+      const { default: Vapi } = await import('@vapi-ai/web')
       const vapi = new Vapi(VAPI_PUBLIC_KEY)
       vapiRef.current = vapi
 
@@ -40,91 +54,72 @@ export default function Demo() {
         setIsSpeaking(false)
       })
 
-      vapi.on('speech-start', () => {
-        console.log('VAPI: speech-start')
-        setIsSpeaking(true)
-      })
-
-      vapi.on('speech-end', () => {
-        console.log('VAPI: speech-end')
-        setIsSpeaking(false)
-      })
+      vapi.on('speech-start', () => setIsSpeaking(true))
+      vapi.on('speech-end', () => setIsSpeaking(false))
 
       vapi.on('error', (err: unknown) => {
         console.error('VAPI error:', err)
-      })
-
-      console.log('VAPI instance pre-initialized')
-    } catch (e) {
-      console.error('Failed to pre-initialize VAPI:', e)
-    }
-  }, [])
-
-  // tRPC mutation to create webcall via backend
-  const startCallMutation = trpc.demo.startCall.useMutation({
-    onSuccess: async (data) => {
-      if (data.success && data.webCallUrl && data.callId) {
-        console.log('Webcall created, joining immediately...')
-        setStatusMsg('Joining voice room...')
-        await connectToCall(data.webCallUrl, data.callId)
-      } else {
-        console.error('Backend error:', data.error)
-        setStatusMsg(data.error || 'Failed to create call')
+        setStatusMsg('Voice connection error')
         setCallState('error')
-      }
-    },
-    onError: (err) => {
-      console.error('tRPC error:', err)
-      setStatusMsg('Server error: ' + err.message)
-      setCallState('error')
-    },
-  })
-
-  // Connect to call using VAPI SDK reconnect
-  const connectToCall = useCallback(async (webCallUrl: string, callId: string) => {
-    try {
-      if (!vapiRef.current) {
-        throw new Error('VAPI not initialized')
-      }
-
-      // Stop any previous call first
-      try { vapiRef.current.stop() } catch { /* ok */ }
-      await new Promise(r => setTimeout(r, 500))
-
-      console.log('Calling reconnect with:', { webCallUrl, callId })
-
-      // Use reconnect to join the pre-created webcall
-      await vapiRef.current.reconnect({
-        webCallUrl,
-        id: callId,
       })
+
+      console.log('Connecting to webcall:', callId)
+      // Use reconnect to join the pre-created webcall
+      await vapi.reconnect({ webCallUrl, id: callId })
 
     } catch (err) {
       console.error('Connect error:', err)
       const msg = err instanceof Error ? err.message : String(err)
-      setStatusMsg('Connection error: ' + msg)
+      setStatusMsg(msg)
       setCallState('error')
     }
   }, [])
 
-  // GSAP entrance
-  useEffect(() => {
-    window.scrollTo(0, 0)
-    const ctx = gsap.context(() => {
-      gsap.from('.demo-animate', { opacity: 0, y: 30, duration: 0.8, stagger: 0.1, ease: 'power3.out', delay: 0.2 })
-    }, sectionRef)
-    return () => ctx.revert()
-  }, [])
-
-  const handleStartCall = () => {
+  const handleStartCall = async () => {
     setCallState('connecting')
     setStatusMsg('Creating voice session...')
-    startCallMutation.mutate()
+
+    try {
+      // Step 1: Create webcall via VAPI API (CORS enabled!)
+      console.log('Creating webcall...')
+      const response = await fetch('https://api.vapi.ai/call/web', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${VAPI_PUBLIC_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ assistantId: VAPI_ASSISTANT_ID }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`VAPI API error (${response.status}): ${errorText}`)
+      }
+
+      const data = await response.json()
+      console.log('Webcall created:', data.id, data.webCallUrl)
+
+      if (!data.webCallUrl || !data.id) {
+        throw new Error('Invalid response from VAPI')
+      }
+
+      setStatusMsg('Joining voice room...')
+
+      // Step 2: Connect to the webcall using VAPI SDK
+      await connectToCall(data.webCallUrl, data.id)
+
+    } catch (err) {
+      console.error('Start call error:', err)
+      const msg = err instanceof Error ? err.message : String(err)
+      setStatusMsg('Failed to start: ' + msg)
+      setCallState('error')
+    }
   }
 
   const handleStopCall = () => {
     if (vapiRef.current) {
       try { vapiRef.current.stop() } catch { /* ok */ }
+      vapiRef.current = null
     }
     setCallState('ended')
     setIsSpeaking(false)
@@ -199,13 +194,12 @@ export default function Demo() {
                 </p>
                 <button
                   onClick={handleStartCall}
-                  disabled={startCallMutation.isPending}
-                  className="inline-flex items-center gap-2 px-10 py-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white font-bold text-lg hover:scale-105 active:scale-95 transition-all duration-200 neon-glow disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-10 py-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white font-bold text-lg hover:scale-105 active:scale-95 transition-all duration-200 neon-glow"
                 >
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
                   </svg>
-                  {startCallMutation.isPending ? 'Creating Session...' : 'Start Live Demo'}
+                  Start Live Demo
                 </button>
                 <p className="text-[#555555] text-xs mt-4 text-center">Allow microphone access when prompted</p>
               </div>
@@ -298,7 +292,7 @@ export default function Demo() {
                 </div>
                 <h3 className="text-white text-lg font-bold mb-2 text-center">Connection Issue</h3>
                 <p className="text-[#888888] text-sm text-center max-w-sm mb-2">{statusMsg}</p>
-                <p className="text-[#555555] text-xs text-center max-w-sm mb-6">Check your microphone permissions and try again.</p>
+                <p className="text-[#555555] text-xs text-center max-w-sm mb-6">Check console (F12) for details.</p>
                 <button onClick={handleRestart} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white font-bold text-sm hover:scale-105 transition-all neon-glow">Try Again</button>
               </div>
             )}
