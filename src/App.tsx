@@ -1,12 +1,16 @@
 import { Routes, Route } from 'react-router'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import Home from './pages/Home'
 import Demo from './pages/Demo'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/demo" element={<Demo />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/demo" element={<Demo />} />
+      </Routes>
+      <SpeedInsights />
+    </>
   )
 }
