@@ -3,10 +3,28 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": null,
-  "rewrites": [
-    { "source": "/api/trpc/:path*", "destination": "/api/index" },
-    { "source": "/api/:path*", "destination": "/api/index" },
-    { "source": "/demo", "destination": "/index.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+  "routes": [
+    {
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml",
+      "headers": {
+        "Content-Type": "application/xml"
+      }
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/robots.txt",
+      "headers": {
+        "Content-Type": "text/plain"
+      }
+    },
+    {
+      "src": "/demo",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
