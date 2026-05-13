@@ -1,180 +1,367 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router'
-import MandalaGlow from '../components/MandalaGlow'
+import { useState, useRef } from 'react';
+import type { FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Utensils,
+  Scissors,
+  Wrench,
+  ChevronRight,
+  ChevronLeft,
+  Shield,
+  CreditCard,
+  Clock,
+  HelpCircle,
+  Send,
+  CheckCircle2,
+  Sparkles,
+  Building2,
+  User,
+  Phone,
+  Mail,
+  FileText,
+} from 'lucide-react';
 
-const BUSINESS_TYPES = [
+const businessTypes = [
   {
     id: 'barbershop',
     label: 'Barbershop / Salon',
-    icon: (
-      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
-      </svg>
-    ),
+    icon: Scissors,
+    description: 'Booking appointments & handling enquiries',
+    color: 'sky',
   },
   {
     id: 'garage',
-    label: 'Car Service / Garage',
-    icon: (
-      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206A15.705 15.705 0 013.75 21l5.877-5.877m0 0a2.548 2.548 0 013.586 0l6.837-5.63m-12.474 5.63l-4.655 5.653" />
-      </svg>
-    ),
+    label: 'Garage / MOT Centre',
+    icon: Wrench,
+    description: 'Repair bookings & MOT enquiries',
+    color: 'emerald',
   },
-      {
+  {
     id: 'takeaway',
     label: 'Takeaway / Restaurant',
-    icon: (
-      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.617A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.617m-16.5 0V5.65a2.25 2.25 0 012.25-2.25h.75v-.75a.75.75 0 011.5 0V3.4h.75a2.25 2.25 0 012.25 2.25v.617" />
-      </svg>
-    ),
+    icon: Utensils,
+    description: 'Order taking & reservation calls',
+    color: 'amber',
   },
-]
+];
 
-const FAQS = [
-  { q: 'How long is the demo?', a: 'Just 10 minutes. We will show you how the AI answers calls, takes bookings, and handles enquiries — all in real time.' },
-  { q: 'Do I need to prepare anything?', a: 'Nothing at all. Just have your questions ready. We will walk you through everything and show you a live call with your own AI agent.' },
-  { q: 'Is the demo really free?', a: 'Yes, 100% free. No credit card, no commitment, no hidden charges. If you like it, we will set it up for a free weekend trial.' },
-  { q: 'What happens after the demo?', a: 'You decide. If you want to proceed, we set up your AI agent in under 48 hours. If not, no hard feelings — the demo was still useful!' },
-  { q: 'Can I see it working for my exact business type?', a: 'Absolutely. Whether you run a garage, salon, or takeaway — we will show you the AI handling calls specific to your industry.' },
-]
+const faqs = [
+  {
+    q: 'How does the demo work?',
+    a: 'We call you and show you exactly how AI Receptionist answers calls for your business type. The demo takes about 10 minutes.',
+  },
+  {
+    q: 'Is the demo really free?',
+    a: 'Yes, 100% free. No credit card required, no hidden charges, no obligation.',
+  },
+  {
+    q: 'What do I need for the demo?',
+    a: 'Just your phone. We call you and you can hear the AI in action.',
+  },
+  {
+    q: 'How quickly will you call me?',
+    a: 'We call within 24 hours, usually the same day.',
+  },
+];
 
 export default function GetDemo() {
-  const navigate = useNavigate()
-  const [step, setStep] = useState(1)
-  const [selectedType, setSelectedType] = useState('')
-  const [openFaq, setOpenFaq] = useState<number | null>(null)
-  const [formData, setFormData] = useState({ businessName: '', contactName: '', phone: '', email: '', description: '' })
-  const [submitting, setSubmitting] = useState(false)
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [selectedType, setSelectedType] = useState('');
+  const [formData, setFormData] = useState({
+    businessName: '',
+    contactName: '',
+    phone: '',
+    email: '',
+    description: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const handleTypeSelect = (typeId: string) => {
-    setSelectedType(typeId)
-    setStep(2)
-  }
+  const handleSelectType = (id: string) => {
+    setSelectedType(id);
+  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  }
+  const handleContinue = () => {
+    if (selectedType) setStep(2);
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
+  const handleBack = () => {
+    setStep(1);
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    const data = new FormData();
+    data.append('access_key', 'c4c5ea5b-3fd9-43d3-8c2f-b5b6b31e74b3');
+    data.append('subject', `Demo Request - ${businessTypes.find(b => b.id === selectedType)?.label}`);
+    data.append('business_type', businessTypes.find(b => b.id === selectedType)?.label || '');
+    data.append('business_name', formData.businessName);
+    data.append('contact_name', formData.contactName);
+    data.append('phone', formData.phone);
+    data.append('email', formData.email);
+    data.append('description', formData.description);
+
     try {
-      await fetch('https://api.web3forms.com/submit', {
+      const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          access_key: 'c4c5ea5b-3fd9-43d3-8c2f-b5b6b31e74b3',
-          subject: `[Demo Request] ${formData.businessName}`,
-          from_name: formData.contactName,
-          business_type: BUSINESS_TYPES.find(t => t.id === selectedType)?.label,
-          ...formData,
-        }),
-      })
-      navigate('/demo-call', { state: { businessType: selectedType } })
+        body: data,
+      });
+      const result = await res.json();
+      if (result.success) {
+        setSubmitted(true);
+        setTimeout(() => {
+          navigate('/demo-call', { state: { businessType: selectedType } });
+        }, 1500);
+      }
     } catch {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
+
+  const updateField = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] relative">
-      <div className="fixed inset-0 z-0 pointer-events-none"><MandalaGlow /></div>
-      <div className="relative z-10 pt-24 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${step >= 1 ? 'bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white' : 'bg-white/10 text-[#555]'}`}>
-              <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">1</span>
-              Your Details
-            </div>
-            <div className="w-8 h-0.5 bg-gradient-to-r from-[#3b82f6] to-[#a855f7]" />
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${step >= 2 ? 'bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white' : 'bg-white/10 text-[#555]'}`}>
-              <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">2</span>
-              Your Demo
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pt-24 pb-16 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 bg-sky-500/15 border border-sky-500/25 rounded-full px-4 py-1.5 mb-4">
+            <Sparkles className="w-4 h-4 text-sky-400" />
+            <span className="text-sky-300 text-sm font-medium">
+              Free 10-Minute Demo
+            </span>
           </div>
-          <div className="flex items-center justify-center gap-4 mb-8 text-[10px] sm:text-xs text-[#555] uppercase tracking-wider">
-            <span className="flex items-center gap-1"><svg className="w-3 h-3 text-[#22c55e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>SSL Secure</span>
-            <span className="flex items-center gap-1"><svg className="w-3 h-3 text-[#3b82f6]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>No Credit Card</span>
-            <span className="flex items-center gap-1"><svg className="w-3 h-3 text-[#a855f7]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>10-Min Demo</span>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Get Your Free AI Demo
+          </h1>
+          <p className="text-slate-400 max-w-md mx-auto">
+            See exactly how AI Receptionist handles calls for your business.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 mb-10 max-w-md mx-auto">
+          <div className="flex-1">
+            <div className={`h-2 rounded-full transition-all ${step >= 1 ? 'bg-sky-500' : 'bg-white/10'}`} />
+            <p className={`text-xs mt-2 ${step >= 1 ? 'text-sky-400' : 'text-slate-600'}`}>Business Type</p>
           </div>
-          {step === 1 && (
-            <div>
-              <div className="text-center mb-8">
-                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">Get Your <span className="bg-gradient-to-r from-[#3b82f6] to-[#a855f7] bg-clip-text text-transparent">Free Demo</span></h1>
-                <p className="text-[#888] text-base max-w-lg mx-auto">Select your business type and we will set up a personalised 10-minute demo call</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-                {BUSINESS_TYPES.map((type) => (
-                  <button key={type.id} onClick={() => handleTypeSelect(type.id)} className="rounded-2xl p-6 border border-white/10 bg-white/[0.03] hover:border-[#3b82f6]/50 hover:bg-white/5 transition-all text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#3b82f6]/20 to-[#a855f7]/20 flex items-center justify-center text-[#3b82f6]">{type.icon}</div>
-                    <h3 className="text-white font-semibold text-sm">{type.label}</h3>
-                    <p className="text-[#555] text-xs mt-1">Click to continue</p>
-                  </button>
-                ))}
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
-                <div className="px-6 py-4 border-b border-white/10">
-                  <h3 className="text-white font-semibold text-lg">Frequently Asked Questions</h3>
-                </div>
-                {FAQS.map((faq, i) => (
-                  <div key={i} className="border-b border-white/5 last:border-0">
-                    <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/[0.02]">
-                      <span className="text-[#ccc] text-sm">{faq.q}</span>
-                      <svg className={`w-4 h-4 text-[#555] transition-transform ${openFaq === i ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+          <ChevronRight className="w-4 h-4 text-slate-600 -mt-5" />
+          <div className="flex-1">
+            <div className={`h-2 rounded-full transition-all ${step >= 2 ? 'bg-sky-500' : 'bg-white/10'}`} />
+            <p className={`text-xs mt-2 ${step >= 2 ? 'text-sky-400' : 'text-slate-600'}`}>Your Details</p>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/25 rounded-xl p-4 mb-8 flex items-center gap-3">
+          <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />
+          <p className="text-amber-300 text-sm">
+            <strong>Limited spots:</strong> Only 5 free demo slots per week. Book yours now.
+          </p>
+        </div>
+
+        {submitted ? (
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-10 text-center">
+            <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-white mb-2">Request Sent!</h2>
+            <p className="text-slate-400">Redirecting you to your demo details...</p>
+          </div>
+        ) : (
+          <form ref={formRef} onSubmit={handleSubmit}>
+            {step === 1 && (
+              <div className="space-y-4 mb-8">
+                <h2 className="text-lg font-semibold text-white mb-4">
+                  What type of business do you run?
+                </h2>
+                {businessTypes.map(type => {
+                  const Icon = type.icon;
+                  const isSelected = selectedType === type.id;
+                  return (
+                    <button
+                      key={type.id}
+                      type="button"
+                      onClick={() => handleSelectType(type.id)}
+                      className={`w-full text-left p-5 rounded-xl border-2 transition-all ${
+                        isSelected
+                          ? 'border-sky-500 bg-sky-500/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${isSelected ? 'bg-sky-500/20' : 'bg-white/10'}`}>
+                          <Icon className={`w-6 h-6 ${isSelected ? 'text-sky-400' : 'text-slate-400'}`} />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-white font-medium">{type.label}</h3>
+                          <p className="text-slate-400 text-sm">{type.description}</p>
+                        </div>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-sky-500 bg-sky-500' : 'border-slate-600'}`}>
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-white" />}
+                        </div>
+                      </div>
                     </button>
-                    {openFaq === i && <div className="px-6 pb-4 text-[#888] text-sm">{faq.a}</div>}
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onClick={handleContinue}
+                  disabled={!selectedType}
+                  className="w-full py-3.5 bg-sky-500 hover:bg-sky-400 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 mt-6 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Continue
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center gap-2 mb-6">
+                  <button type="button" onClick={handleBack} className="text-slate-400 hover:text-white transition-colors cursor-pointer">
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <h2 className="text-lg font-semibold text-white">Your Contact Details</h2>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-1.5 flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-slate-500" />
+                    Business Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.businessName}
+                    onChange={e => updateField('businessName', e.target.value)}
+                    placeholder="e.g. Joe's Barbershop"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-1.5 flex items-center gap-2">
+                    <User className="w-4 h-4 text-slate-500" />
+                    Your Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.contactName}
+                    onChange={e => updateField('contactName', e.target.value)}
+                    placeholder="e.g. John Smith"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-1.5 flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-slate-500" />
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={formData.phone}
+                    onChange={e => updateField('phone', e.target.value)}
+                    placeholder="e.g. 07123 456 789"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-1.5 flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-slate-500" />
+                    Email Address (optional)
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={e => updateField('email', e.target.value)}
+                    placeholder="e.g. john@business.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-1.5 flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-slate-500" />
+                    Tell us about your needs (optional)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={formData.description}
+                    onChange={e => updateField('description', e.target.value)}
+                    placeholder="e.g. I need help answering calls during busy lunch hours..."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full py-3.5 bg-sky-500 hover:bg-sky-400 disabled:bg-slate-700 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 mt-6 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  {submitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5" />
+                      Request Free Demo
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center justify-center gap-6 mb-10">
+              <div className="flex items-center gap-2 text-slate-500 text-xs">
+                <Shield className="w-4 h-4" />
+                <span>SSL Secure</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-500 text-xs">
+                <CreditCard className="w-4 h-4" />
+                <span>No Credit Card</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-500 text-xs">
+                <Clock className="w-4 h-4" />
+                <span>10-Min Demo</span>
+              </div>
+            </div>
+
+            <div className="border-t border-white/10 pt-8">
+              <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-sky-400" />
+                Frequently Asked Questions
+              </h2>
+              <div className="space-y-3">
+                {faqs.map((faq, i) => (
+                  <div key={i} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                      className="w-full text-left px-4 py-3 flex items-center justify-between cursor-pointer"
+                    >
+                      <span className="text-white text-sm font-medium">{faq.q}</span>
+                      <ChevronRight className={`w-4 h-4 text-slate-500 transition-transform ${openFaq === i ? 'rotate-90' : ''}`} />
+                    </button>
+                    {openFaq === i && (
+                      <div className="px-4 pb-3 text-slate-400 text-sm">{faq.a}</div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
-          )}
-          {step === 2 && (
-            <div>
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3b82f6]/10 border border-[#3b82f6]/30 mb-4">
-                  <span className="text-[#3b82f6] text-xs font-semibold">{BUSINESS_TYPES.find(t => t.id === selectedType)?.label}</span>
-                </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">Almost There!</h1>
-                <p className="text-[#888] text-base">Fill in your details and we will send you straight to your demo number</p>
-              </div>
-              <div className="mb-6 p-3 rounded-xl bg-gradient-to-r from-[#f59e0b]/10 to-[#f59e0b]/5 border border-[#f59e0b]/30 text-center">
-                <p className="text-[#f59e0b] text-xs font-semibold uppercase">Only 5 free demo slots per week — reserve yours now</p>
-              </div>
-              <form onSubmit={handleSubmit} className="rounded-2xl p-6 sm:p-8 border border-white/10 bg-white/[0.03] space-y-5">
-                <div>
-                  <label className="block text-[#888] text-xs uppercase font-medium mb-2">Business Name *</label>
-                  <input type="text" name="businessName" required value={formData.businessName} onChange={handleInputChange} placeholder="e.g., Fast Fix Garage" className="w-full px-4 py-3.5 rounded-xl bg-[#141414] border border-white/10 text-white placeholder-[#555] text-sm focus:border-[#3b82f6]/50 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-[#888] text-xs uppercase font-medium mb-2">Your Name *</label>
-                  <input type="text" name="contactName" required value={formData.contactName} onChange={handleInputChange} placeholder="e.g., John Smith" className="w-full px-4 py-3.5 rounded-xl bg-[#141414] border border-white/10 text-white placeholder-[#555] text-sm focus:border-[#3b82f6]/50 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-[#888] text-xs uppercase font-medium mb-2">Phone Number *</label>
-                  <input type="tel" name="phone" required value={formData.phone} onChange={handleInputChange} placeholder="e.g., 07123 456 789" className="w-full px-4 py-3.5 rounded-xl bg-[#141414] border border-white/10 text-white placeholder-[#555] text-sm focus:border-[#3b82f6]/50 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-[#888] text-xs uppercase font-medium mb-2">Email Address *</label>
-                  <input type="email" name="email" required value={formData.email} onChange={handleInputChange} placeholder="e.g., john@yourgarage.co.uk" className="w-full px-4 py-3.5 rounded-xl bg-[#141414] border border-white/10 text-white placeholder-[#555] text-sm focus:border-[#3b82f6]/50 focus:outline-none" />
-                </div>
-                <div>
-                  <label className="block text-[#888] text-xs uppercase font-medium mb-2">Tell us about your business (optional)</label>
-                  <textarea name="description" rows={3} value={formData.description} onChange={handleInputChange} placeholder="How many calls do you get per day?" className="w-full px-4 py-3.5 rounded-xl bg-[#141414] border border-white/10 text-white placeholder-[#555] text-sm focus:border-[#3b82f6]/50 focus:outline-none resize-none" />
-                </div>
-                <button type="submit" disabled={submitting} className="w-full py-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white font-bold text-base hover:scale-[1.02] transition-all disabled:opacity-50">
-                  {submitting ? 'Submitting...' : 'Get My Demo Number →'}
-                </button>
-                <button type="button" onClick={() => setStep(1)} className="w-full py-2 text-[#555] text-sm hover:text-white transition-colors">← Back to business type</button>
-              </form>
-            </div>
-          )}
-          <div className="text-center mt-10">
-            <Link to="/" className="text-[#555] text-sm hover:text-white transition-colors">← Back to homepage</Link>
-          </div>
-        </div>
+          </form>
+        )}
       </div>
-    </main>
-  )
+    </div>
+  );
 }
