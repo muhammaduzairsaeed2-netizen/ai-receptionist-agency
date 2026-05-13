@@ -1,20 +1,20 @@
-import { Link, useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Home } from 'lucide-react';
 
 export default function BackToHome() {
-  const location = useLocation()
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // Don't show on home page
-  if (location.pathname === '/') return null
+  if (location.pathname === '/') return null;
 
   return (
-    <Link
-      to="/"
-      className="fixed top-24 right-4 sm:right-6 z-40 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-[#888888] text-sm font-medium hover:bg-white/10 hover:text-white transition-all duration-200"
+    <button
+      onClick={() => navigate('/')}
+      className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white text-sm font-medium px-4 py-2.5 rounded-full transition-all cursor-pointer group"
+      title="Back to Home"
     >
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-      </svg>
-      Home
-    </Link>
-  )
+      <Home className="w-4 h-4 group-hover:scale-110 transition-transform" />
+      <span className="hidden sm:inline">Home</span>
+    </button>
+  );
 }
