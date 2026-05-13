@@ -21,10 +21,9 @@ const BUSINESS_TYPES = [
       </svg>
     ),
   },
-    {
+      {
     id: 'takeaway',
     label: 'Takeaway / Restaurant',
-    phone: '0118 214 8396',
     icon: (
       <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.617A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.617m-16.5 0V5.65a2.25 2.25 0 012.25-2.25h.75v-.75a.75.75 0 011.5 0V3.4h.75a2.25 2.25 0 012.25 2.25v.617" />
