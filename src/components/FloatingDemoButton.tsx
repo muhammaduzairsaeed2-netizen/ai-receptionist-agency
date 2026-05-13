@@ -1,31 +1,28 @@
-import { Link } from 'react-router'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
 
 export default function FloatingDemoButton() {
-  const [visible, setVisible] = useState(false)
+  const navigate = useNavigate();
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setVisible(window.scrollY > 300)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  if (!visible) return null
+      setVisible(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <Link
-        to="/get-demo"
-        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-gradient-to-r from-[#3b82f6] to-[#a855f7] text-white font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-all"
-      >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-        </svg>
-        Get Free Demo
-      </Link>
-    </div>
-  )
+    <button
+      onClick={() => navigate('/get-demo')}
+      className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white font-semibold px-5 py-3.5 rounded-full shadow-lg shadow-sky-500/25 transition-all cursor-pointer ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+      }`}
+    >
+      <Sparkles className="w-4 h-4" />
+      Get Free Demo
+    </button>
+  );
 }
-
