@@ -8,6 +8,7 @@ import {
   Utensils,
   Scissors,
   Wrench,
+  Store,
   ArrowLeft,
   Sparkles,
 } from 'lucide-react'
@@ -36,12 +37,19 @@ const BUSINESS_INFO: Record<string, { label: string; greeting: string; phone: st
       'Excellent! AI Receptionist will capture every repair booking and MOT enquiry, even when you are under a car.',
     phone: '07438 276 572',
   },
+  other: {
+    label: 'Other Business',
+    greeting:
+      'Great! AI Receptionist works for any business that receives phone calls — we will tailor the demo to your needs.',
+    phone: '07438 276 572',
+  },
 }
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   takeaway: <Utensils className="w-8 h-8 text-amber-400" />,
   barbershop: <Scissors className="w-8 h-8 text-sky-400" />,
   garage: <Wrench className="w-8 h-8 text-emerald-400" />,
+  other: <Store className="w-8 h-8 text-rose-400" />,
 }
 
 export default function DemoThanks() {
