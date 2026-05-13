@@ -11,7 +11,7 @@ import {
   ArrowLeft,
   Sparkles,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 interface LocationState {
   businessType?: string;
@@ -46,18 +46,77 @@ export default function DemoThanks() {
   const info = BUSINESS_INFO[businessType] || BUSINESS_INFO['barbershop'];
   const demoPhone = info.phone;
 
-  const [copied, setCopied] = useState(false);
+  // Format phone for tel: link (remove spaces)
+  const telLink = `tel:${demoPhone.replace(/\s/g, '')}`;
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleCopyNumber = () => {
-    navigator.clipboard.writeText(demoPhone).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
+  const getIcon = () => {
+    switch (businessType) {
+      case 'takeaway':
+        return <Utensils className="w-8 h-8 text-amber- the complete updated `DemoThanks.tsx`. The phone number is now a **clickable link** that starts a call when tapped:
+
+---
+
+### `src/pages/DemoThanks.tsx` — Copy & Paste This
+
+```tsx
+import { useLocation, useNavigate } from 'react-router-dom';
+import FloatingParticles from '../components/FloatingParticles';
+import {
+  Phone,
+  Clock,
+  CheckCircle2,
+  MessageSquare,
+  Utensils,
+  Scissors,
+  Wrench,
+  ArrowLeft,
+  Sparkles,
+} from 'lucide-react';
+import { useEffect } from 'react';
+
+interface LocationState {
+  businessType?: string;
+}
+
+const BUSINESS_INFO: Record<string, { label: string; greeting: string; phone: string }> = {
+  takeaway: {
+    label: 'Takeaway / Restaurant',
+    greeting:
+      'Great choice! AI Receptionist is perfect for takeaways — never miss another order during busy hours.',
+    phone: '0118 214 8396',
+  },
+  barbershop: {
+    label: 'Barbershop / Salon',
+    greeting:
+      'Perfect! AI Receptionist will handle your bookings and free you up to focus on your clients.',
+    phone: '07438 276 572',
+  },
+  garage: {
+    label: 'Garage / MOT Centre',
+    greeting:
+      'Excellent! AI Receptionist will capture every repair booking and MOT enquiry, even when you are under a car.',
+    phone: '07438 276 572',
+  },
+};
+
+export default function DemoThanks() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const state = location.state as LocationState;
+  const businessType = state?.businessType || 'barbershop';
+  const info = BUSINESS_INFO[businessType] || BUSINESS_INFO['barbershop'];
+  const demoPhone = info.phone;
+
+  // Format phone for tel: link (remove spaces)
+  const telLink = `tel:${demoPhone.replace(/\s/g, '')}`;
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const getIcon = () => {
     switch (businessType) {
@@ -102,28 +161,23 @@ export default function DemoThanks() {
               {info.greeting}
             </p>
 
-            {/* Phone Number Box */}
+            {/* Phone Number Box — NOW CLICKABLE CALL LINK */}
             <div className="bg-gradient-to-r from-sky-500/20 to-purple-500/20 border border-sky-500/30 rounded-xl p-6 mb-6">
               <p className="text-slate-400 text-xs uppercase tracking-wider mb-2">
                 Your AI Demo Number
               </p>
-              <button
-                onClick={handleCopyNumber}
-                className="flex items-center justify-center gap-3 mx-auto group cursor-pointer"
-                title="Click to copy"
+              <a
+                href={telLink}
+                className="flex items-center justify-center gap-3 mx-auto group cursor-pointer neon-glow-strong rounded-xl px-6 py-3 transition-all hover:scale-105"
+                title="Click to call"
               >
                 <Phone className="w-6 h-6 text-sky-400 group-hover:scale-110 transition-transform" />
                 <span className="text-3xl font-bold text-white tracking-tight">
                   {demoPhone}
                 </span>
-              </button>
-              {copied && (
-                <p className="text-emerald-400 text-xs mt-2 animate-pulse">
-                  Copied to clipboard!
-                </p>
-              )}
+              </a>
               <p className="text-slate-400 text-xs mt-3">
-                Click number to copy
+                Click number to call now
               </p>
             </div>
 
