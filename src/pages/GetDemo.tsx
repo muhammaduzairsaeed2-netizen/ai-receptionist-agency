@@ -6,6 +6,7 @@ import {
   Utensils,
   Scissors,
   Wrench,
+  Store,
   ChevronRight,
   ChevronLeft,
   Shield,
@@ -43,6 +44,13 @@ const businessTypes = [
     icon: Utensils,
     description: 'Order taking & reservation calls',
     color: 'amber',
+  },
+  {
+    id: 'other',
+    label: 'Other Business',
+    icon: Store,
+    description: 'Any other type of business',
+    color: 'rose',
   },
 ];
 
@@ -130,12 +138,12 @@ export default function GetDemo() {
 
   return (
     <main className="min-h-screen relative">
-  <AmbientBackground />
-  <div className="relative z-10 pt-24 pb-16 px-4">
+      <AmbientBackground />
+      <div className="relative z-10 pt-24 pb-16 px-4">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 bg-sky-500/15 border border-sky-500/25 rounded-full px-4 py-1.5 mb-4">
+            <div className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/20 rounded-full px-4 py-1.5 mb-4 backdrop-blur-md">
               <Sparkles className="w-4 h-4 text-sky-400" />
               <span className="text-sky-300 text-sm font-medium">
                 Free 10-Minute Demo
@@ -163,7 +171,7 @@ export default function GetDemo() {
           </div>
 
           {/* Urgency Banner */}
-          <div className="bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/25 rounded-xl p-4 mb-8 flex items-center gap-3">
+          <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 mb-8 flex items-center gap-3 backdrop-blur-md">
             <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />
             <p className="text-amber-300 text-sm">
               <strong>Limited spots:</strong> Only 5 free demo slots per week. Book yours now.
@@ -171,7 +179,7 @@ export default function GetDemo() {
           </div>
 
           {submitted ? (
-            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-10 text-center">
+            <div className="bg-emerald-500/[0.06] border border-emerald-500/20 rounded-2xl p-10 text-center backdrop-blur-md">
               <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto mb-4" />
               <h2 className="text-xl font-bold text-white mb-2">Request Sent!</h2>
               <p className="text-slate-400">Redirecting you to your demo details...</p>
@@ -192,14 +200,14 @@ export default function GetDemo() {
                         key={type.id}
                         type="button"
                         onClick={() => handleSelectType(type.id)}
-                        className={`w-full text-left p-5 rounded-xl border-2 transition-all ${
+                        className={`w-full text-left p-5 rounded-xl border-2 transition-all backdrop-blur-md ${
                           isSelected
-                            ? 'border-sky-500 bg-sky-500/10'
-                            : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                            ? 'border-sky-500 bg-sky-500/[0.08]'
+                            : 'border-white/[0.08] bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]'
                         }`}
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${isSelected ? 'bg-sky-500/20' : 'bg-white/10'}`}>
+                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${isSelected ? 'bg-sky-500/20' : 'bg-white/[0.06]'}`}>
                             <Icon className={`w-6 h-6 ${isSelected ? 'text-sky-400' : 'text-slate-400'}`} />
                           </div>
                           <div className="flex-1">
@@ -249,7 +257,7 @@ export default function GetDemo() {
                       value={formData.businessName}
                       onChange={e => updateField('businessName', e.target.value)}
                       placeholder="e.g. Joe's Barbershop"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors backdrop-blur-sm"
                     />
                   </div>
 
@@ -264,7 +272,7 @@ export default function GetDemo() {
                       value={formData.contactName}
                       onChange={e => updateField('contactName', e.target.value)}
                       placeholder="e.g. John Smith"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors backdrop-blur-sm"
                     />
                   </div>
 
@@ -279,7 +287,7 @@ export default function GetDemo() {
                       value={formData.phone}
                       onChange={e => updateField('phone', e.target.value)}
                       placeholder="e.g. 07123 456 789"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors backdrop-blur-sm"
                     />
                   </div>
 
@@ -293,7 +301,7 @@ export default function GetDemo() {
                       value={formData.email}
                       onChange={e => updateField('email', e.target.value)}
                       placeholder="e.g. john@business.com"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors backdrop-blur-sm"
                     />
                   </div>
 
@@ -307,7 +315,7 @@ export default function GetDemo() {
                       value={formData.description}
                       onChange={e => updateField('description', e.target.value)}
                       placeholder="e.g. I need help answering calls during busy lunch hours..."
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors resize-none"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none transition-colors resize-none backdrop-blur-sm"
                     />
                   </div>
 
@@ -355,7 +363,7 @@ export default function GetDemo() {
                 </h2>
                 <div className="space-y-3">
                   {faqs.map((faq, i) => (
-                    <div key={i} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                    <div key={i} className="bg-white/[0.03] border border-white/[0.08] rounded-xl overflow-hidden backdrop-blur-md">
                       <button
                         type="button"
                         onClick={() => setOpenFaq(openFaq === i ? null : i)}
