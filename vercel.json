@@ -1,14 +1,6 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": null,
   "rewrites": [
     { "source": "/get-demo", "destination": "/index.html" },
-    { "source": "/demo-call", "destination": "/index.html" },
-    { "source": "/demo", "destination": "/index.html" },
-    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
-    { "source": "/robots.txt", "destination": "/robots.txt" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/demo-call", "destination": "/index.html" }
   ]
 }
