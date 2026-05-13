@@ -48,10 +48,10 @@ export default function Navbar() {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
             <Link
-              to="/demo"
+              to="/get-demo"
               className="text-sm text-[#888888] hover:text-white transition-colors duration-200"
             >
-              Demo
+              Get Free Demo
             </Link>
             <button
               onClick={() => scrollTo('offer')}
