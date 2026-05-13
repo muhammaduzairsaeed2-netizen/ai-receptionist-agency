@@ -129,9 +129,9 @@ export default function GetDemo() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] relative">
-      <FloatingParticles />
-      <div className="relative z-10 pt-24 pb-16 px-4">
+    <main className="min-h-screen relative">
+  <AmbientBackground />
+  <div className="relative z-10 pt-24 pb-16 px-4">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-10">
