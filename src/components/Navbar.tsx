@@ -79,7 +79,7 @@ export default function Navbar() {
               </svg>
             ) : (
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                <path strokeLinecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
           </button>
@@ -91,11 +91,11 @@ export default function Navbar() {
         <div className="md:hidden bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/10">
           <div className="px-4 py-6 space-y-4">
             <Link
-              to="/demo"
+              to="/get-demo"
               onClick={() => setMenuOpen(false)}
               className="block w-full text-left text-[#888888] hover:text-white transition-colors py-2"
             >
-              Demo
+              Get Free Demo
             </Link>
             <button
               onClick={() => scrollTo('offer')}
