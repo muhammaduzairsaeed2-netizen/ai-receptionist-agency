@@ -3,25 +3,29 @@ import MandalaGlow from '../components/MandalaGlow'
 
 const DEMO_PHONE = '07438 276 572'
 
-const BUSINESS_INFO: Record<string, { label: string; greeting: string }> = {
+const BUSINESS_INFO: Record<string, { label: string; greeting: string; phone: string }> = {
   barbershop: {
     label: 'Barbershop / Salon',
-    greeting: 'Perfect! AI Receptionist is already handling bookings for barbershops across the UK. Your clients can book cuts, colours, and styling — even while you are with another customer.',
+    greeting: 'Perfect! AI Receptionist is already handling bookings for barbershops across the UK. Your clients can book cuts, colours, and styling — even while you\'re with another customer.',
+    phone: '07438 276 572',
   },
   garage: {
     label: 'Car Service / Garage',
-    greeting: 'Excellent! We have set up AI Receptionist for dozens of garages just like yours. Your AI agent will handle MOT bookings, service enquiries, and repair quotes — 24/7.',
+    greeting: 'Excellent! We\'ve set up AI Receptionist for dozens of garages just like yours. Your AI agent will handle MOT bookings, service enquiries, and repair quotes — 24/7.',
+    phone: '07438 276 572',
   },
   takeaway: {
     label: 'Takeaway / Restaurant',
     greeting: 'Great choice! AI Receptionist is perfect for takeaways that get flooded with orders during rush hour. Your AI agent takes orders, captures addresses, and never puts a customer on hold.',
+    phone: '0118 214 8396',
   },
 }
 
 export default function DemoThanks() {
   const location = useLocation()
   const businessType = (location.state as { businessType?: string })?.businessType || 'garage'
-  const info = BUSINESS_INFO[businessType] || BUSINESS_INFO.garage
+const info = BUSINESS_INFO[businessType] || BUSINESS_INFO.garage
+const demoPhone = info.phone
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] relative">
