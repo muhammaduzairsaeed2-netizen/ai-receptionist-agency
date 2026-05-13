@@ -67,13 +67,13 @@ export default function HeroSection() {
                 Claim Your Free Weekend Trial
               </a>
               <Link
-                to="/demo"
+                to="/get-demo"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-[#22c55e]/30 text-[#22c55e] font-semibold text-sm sm:text-base hover:bg-[#22c55e]/10 transition-all duration-200"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
                 </svg>
-                Try Live Demo
+                Get Free Demo
               </Link>
             </div>
 
