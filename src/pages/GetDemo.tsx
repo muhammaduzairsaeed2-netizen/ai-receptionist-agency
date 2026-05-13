@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import FloatingParticles from '../components/FloatingParticles';
+import AmbientBackground from '../components/AmbientBackground';
 import {
   Utensils,
   Scissors,
