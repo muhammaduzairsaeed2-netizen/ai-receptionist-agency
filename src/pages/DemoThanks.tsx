@@ -35,7 +35,7 @@ const BUSINESS_INFO: Record<string, { label: string; greeting: string; phone: st
     label: 'Garage / MOT Centre',
     greeting:
       'Excellent! AI Receptionist will capture every repair booking and MOT enquiry, even when you are under a car.',
-    phone: '07438 276 572',
+    phone: '01478 624 662',
   },
   other: {
     label: 'Other Business',
