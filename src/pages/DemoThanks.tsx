@@ -29,7 +29,7 @@ const BUSINESS_INFO: Record<string, { label: string; greeting: string; phone: st
     label: 'Barbershop / Salon',
     greeting:
       'Perfect! AI Receptionist will handle your bookings and free you up to focus on your clients.',
-    phone: '07438 276 572',
+    phone: '01494 326 034',  // ← NEW NUMBER
   },
   garage: {
     label: 'Garage / MOT Centre',
