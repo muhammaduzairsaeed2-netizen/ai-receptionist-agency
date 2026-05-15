@@ -8,7 +8,6 @@ import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
 import Cookies from './pages/Cookies'
 import GDPR from './pages/GDPR'
-import BackToHome from './components/BackToHome'
 
 export default function App() {
   return (
