@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export default function Footer() {
   return (
     <footer className="relative bg-[#0a0a0a] border-t border-white/10">
@@ -87,7 +89,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom bar */}
+      {/* Bottom bar — ONLY THIS PART CHANGED */}
       <div className="border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -95,12 +97,18 @@ export default function Footer() {
               &copy; {new Date().getFullYear()} AI Receptionist Agency. All rights reserved.
             </p>
             <div className="flex items-center gap-6 text-xs">
-              <a href="#" className="text-[#555555] hover:text-[#888888] transition-colors">
+              <Link to="/privacy" className="text-[#555555] hover:text-[#888888] transition-colors">
                 Privacy Policy
-              </a>
-              <a href="#" className="text-[#555555] hover:text-[#888888] transition-colors">
+              </Link>
+              <Link to="/terms" className="text-[#555555] hover:text-[#888888] transition-colors">
                 Terms of Service
-              </a>
+              </Link>
+              <Link to="/cookies" className="text-[#555555] hover:text-[#888888] transition-colors">
+                Cookie Policy
+              </Link>
+              <Link to="/gdpr" className="text-[#555555] hover:text-[#888888] transition-colors">
+                GDPR
+              </Link>
             </div>
           </div>
         </div>
