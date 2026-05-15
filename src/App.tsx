@@ -4,15 +4,16 @@ import GetDemo from './pages/GetDemo';
 import DemoThanks from './pages/DemoThanks';
 import BackToHome from './components/BackToHome';
 import FloatingDemoButton from './components/FloatingDemoButton';
-import Terms from './pages/Terms'
-import Privacy from './pages/Privacy'
-import Cookies from './pages/Cookies'
-import GDPR from './pages/GDPR'
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import Cookies from './pages/Cookies';
+import GDPR from './pages/GDPR';
 
 export default function App() {
   return (
     <>
       <BackToHome />
+      <FloatingDemoButton />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/get-demo" element={<GetDemo />} />
@@ -23,5 +24,5 @@ export default function App() {
         <Route path="/gdpr" element={<GDPR />} />
       </Routes>
     </>
-  )
+  );
 }
