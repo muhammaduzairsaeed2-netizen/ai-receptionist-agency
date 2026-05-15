@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /demo-call
 
 Sitemap: https://ai-receptionist4u.co.uk/sitemap.xml
