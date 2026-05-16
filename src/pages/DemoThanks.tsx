@@ -103,9 +103,10 @@ export default function DemoThanks() {
                 title="Click to call"
               >
                 <Phone className="w-6 h-6 text-sky-400 group-hover:scale-110 transition-transform" />
-                <span className="text-3xl font-bold text-white tracking-tight">
-                  {demoPhone}
+                <span className="text-3xl font-bold text-white tracking-tight whitespace-nowrap">
+                {demoPhone}
                 </span>
+
               </a>
               <p className="text-slate-400 text-xs mt-3">
                 Click number to call now
