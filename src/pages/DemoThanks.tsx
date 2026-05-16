@@ -96,7 +96,7 @@ export default function DemoThanks() {
               <p className="text-slate-400 text-xs uppercase tracking-wider mb-2">
                 Your AI Demo Number
               </p>
-              <<a
+              <a
               href={telLink}
               className="flex items-center justify-center gap-3 mx-auto group cursor-pointer rounded-xl px-6 py-3 transition-all hover:scale-105 whitespace-nowrap"
               style={{ boxShadow: '0 0 30px rgba(59,130,246,0.5), 0 0 60px rgba(168,85,247,0.25)' }}
