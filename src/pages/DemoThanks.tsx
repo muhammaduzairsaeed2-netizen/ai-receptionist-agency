@@ -29,7 +29,7 @@ const BUSINESS_INFO: Record<string, { label: string; greeting: string; phone: st
     label: 'Barbershop / Salon',
     greeting:
       'Perfect! AI Receptionist will handle your bookings and free you up to focus on your clients.',
-    phone: '01494 326 034',  // ← NEW NUMBER
+    phone: '01494 326 034',
   },
   garage: {
     label: 'Garage / MOT Centre',
@@ -97,18 +97,15 @@ export default function DemoThanks() {
                 Your AI Demo Number
               </p>
               <a
-              href={telLink}
-              className="flex items-center justify-center gap-3 mx-auto group cursor-pointer rounded-xl px-6 py-3 transition-all hover:scale-105 whitespace-nowrap"
-              style={{ boxShadow: '0 0 30px rgba(59,130,246,0.5), 0 0 60px rgba(168,85,247,0.25)' }}
-              title="Click to call"
-            >
-              <Phone className="w-6 h-6 text-sky-400 group-hover:scale-110 transition-transform flex-shrink-0" />
-              <span className="text-3xl font-bold text-white tracking-tight whitespace-nowrap">
-             {demoPhone}
-             </span>
-              </a>
-
-
+                href={telLink}
+                className="flex items-center justify-center gap-3 mx-auto group cursor-pointer rounded-xl px-6 py-3 transition-all hover:scale-105 whitespace-nowrap"
+                style={{ boxShadow: '0 0 30px rgba(59,130,246,0.5), 0 0 60px rgba(168,85,247,0.25)' }}
+                title="Click to call"
+              >
+                <Phone className="w-6 h-6 text-sky-400 group-hover:scale-110 transition-transform flex-shrink-0" />
+                <span className="text-3xl font-bold text-white tracking-tight whitespace-nowrap">
+                  {demoPhone}
+                </span>
               </a>
               <p className="text-slate-400 text-xs mt-3">
                 Click number to call now
